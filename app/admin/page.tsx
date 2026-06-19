@@ -1,17 +1,9 @@
-import { auth } from "@/lib/auth"
-import { headers } from "next/headers"
-import { redirect } from "next/navigation"
+import { protectRoute } from "@/lib/protect-route"
+
+export const dynamic = "force-dynamic"
 
 export default async function AdminPage() {
-  const session = await auth.api.getSession({ headers: await headers() })
-
-  if (!session) {
-    redirect("/admin/login")
-  }
-
-  if ((session.user as { role?: string }).role !== "admin") {
-    redirect("/")
-  }
+  const session = await protectRoute("admin")
 
   return (
     <div className="flex-1 flex flex-col gap-2 py-10">
@@ -19,7 +11,7 @@ export default async function AdminPage() {
         Admin Dashboard
       </h1>
       <p className="text-sm text-muted-foreground m-0">
-        Signed in as <span className="font-mono text-primary">{session.user.email}</span>
+        Signed in as <span className="font-mono text-primary">{session.user.name || session.user.email}</span>
       </p>
     </div>
   )

@@ -3,12 +3,10 @@ import Link from "next/link"
 export default function NotFound() {
   return (
     <div className="relative flex flex-col flex-1 items-center justify-center gap-6 py-16 px-6 overflow-hidden text-center">
-      <div className="flex items-center gap-1 font-mono font-bold leading-none text-foreground tracking-tighter text-8xl animate-not-found-flicker">
-        <span className="text-primary">*</span>
+      <div className="flex items-center gap-1 font-mono font-bold leading-none text-foreground tracking-tighter text-8xl">
         <span>4</span>
         <span className="text-primary">0</span>
         <span>4</span>
-        <span className="text-primary">*</span>
       </div>
 
       <h1 className="font-mono text-base font-normal tracking-widest uppercase text-muted-foreground m-0">
@@ -33,18 +31,6 @@ export default function NotFound() {
         >
           [Login]
         </Link>
-      </div>
-
-      <div className="absolute inset-0 grid grid-cols-10 pointer-events-none z-0 p-4 gap-1" aria-hidden="true">
-        {Array.from({ length: 80 }).map((_, i) => (
-          <span
-            key={i}
-            className="font-mono text-sm text-muted-foreground animate-dot-blink select-none"
-            style={{ animationDelay: `${(i * 0.05) % 2}s` }}
-          >
-            ·
-          </span>
-        ))}
       </div>
     </div>
   )

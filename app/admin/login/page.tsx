@@ -4,6 +4,9 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { authClient } from "@/lib/auth-client"
 import { tryCatch } from "@/lib/try-catch"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 export default function AdminLoginPage() {
   const router = useRouter()
@@ -17,17 +20,23 @@ export default function AdminLoginPage() {
     setError(null)
     setLoading(true)
 
-    const { error: signInError } = await tryCatch(
+    const { data: signInResponse, error: requestError } = await tryCatch(
       authClient.signIn.email({ email, password })
     )
 
     setLoading(false)
 
-    if (signInError) {
-      setError(signInError.message)
+    if (requestError) {
+      setError(requestError.message)
       return
     }
 
+    if (signInResponse?.error) {
+      setError(signInResponse.error.message || "Unable to sign in")
+      return
+    }
+
+    router.refresh()
     router.push("/admin")
   }
 
@@ -35,7 +44,6 @@ export default function AdminLoginPage() {
     <div className="flex-1 flex items-center justify-center p-8">
       <form className="flex flex-col gap-5 w-full max-w-xs" onSubmit={handleSubmit} noValidate>
         <div className="flex items-center gap-2">
-          <span className="font-mono text-xl text-primary animate-star-pulse" aria-hidden="true">*</span>
           <h1 className="font-mono text-lg font-semibold tracking-widest text-foreground m-0">Admin Login</h1>
         </div>
 
@@ -46,10 +54,9 @@ export default function AdminLoginPage() {
         )}
 
         <div className="flex flex-col gap-1.5">
-          <label className="font-mono text-xs text-muted-foreground tracking-wide" htmlFor="admin-email">Email</label>
-          <input
+          <Label htmlFor="admin-email">Email</Label>
+          <Input
             id="admin-email"
-            className="bg-background text-foreground border border-border rounded-sm px-3 py-2 font-mono text-sm w-full outline-none transition-colors duration-150 focus:border-primary"
             type="email"
             autoComplete="email"
             required
@@ -59,10 +66,9 @@ export default function AdminLoginPage() {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className="font-mono text-xs text-muted-foreground tracking-wide" htmlFor="admin-password">Password</label>
-          <input
+          <Label htmlFor="admin-password">Password</Label>
+          <Input
             id="admin-password"
-            className="bg-background text-foreground border border-border rounded-sm px-3 py-2 font-mono text-sm w-full outline-none transition-colors duration-150 focus:border-primary"
             type="password"
             autoComplete="current-password"
             required
@@ -71,14 +77,12 @@ export default function AdminLoginPage() {
           />
         </div>
 
-        <button
-          id="admin-login-submit"
-          className="font-mono text-xs text-primary-foreground bg-primary border-none rounded-sm px-4 py-2.5 transition-opacity duration-150 tracking-wider mt-1 hover:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed"
+        <Button
           type="submit"
           disabled={loading}
         >
           {loading ? "..." : "[Sign In]"}
-        </button>
+        </Button>
       </form>
     </div>
   )
