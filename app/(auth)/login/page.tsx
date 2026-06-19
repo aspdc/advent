@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { authClient } from "@/lib/auth-client"
-import { tryCatch } from "@/lib/try-catch"
+import { runAuthAction } from "@/lib/auth-action"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,36 +13,56 @@ export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+
+    if (isSubmitting) {
+      return
+    }
+
     setError(null)
-    setLoading(true)
+    setIsSubmitting(true)
 
-    const { data: signInResponse, error: requestError } = await tryCatch(
-      authClient.signIn.email({ email, password })
-    )
+    try {
+      const { error: signInError } = await runAuthAction(
+        authClient.signIn.email({ email, password }),
+        "Unable to sign in"
+      )
 
-    setLoading(false)
+      if (signInError) {
+        setError(signInError)
+        return
+      }
 
-    if (requestError) {
-      setError(requestError.message)
-      return
+      const { data: session, error: sessionError } = await runAuthAction(
+        authClient.getSession(),
+        "Unable to load session"
+      )
+
+      if (sessionError) {
+        setError(sessionError)
+        return
+      }
+
+      const redirectPath = session?.user?.role === "admin" ? "/admin" : "/dashboard"
+
+      router.refresh()
+      router.push(redirectPath)
+    } finally {
+      setIsSubmitting(false)
     }
-
-    if (signInResponse?.error) {
-      setError(signInResponse.error.message || "Unable to sign in")
-      return
-    }
-
-    router.refresh()
-    router.push("/")
   }
 
   return (
     <div className="flex-1 flex items-center justify-center p-8">
-      <form className="flex flex-col gap-5 w-full max-w-xs" onSubmit={handleSubmit} noValidate>
+      <form
+        className="flex flex-col gap-5 w-full max-w-xs"
+        onSubmit={handleSubmit}
+        noValidate
+        aria-busy={isSubmitting}
+      >
         <div className="flex items-center gap-2">
           <h1 className="font-mono text-lg font-semibold tracking-widest text-foreground m-0">Login</h1>
         </div>
@@ -62,6 +82,7 @@ export default function LoginPage() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            disabled={isSubmitting}
           />
         </div>
 
@@ -74,15 +95,16 @@ export default function LoginPage() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            disabled={isSubmitting}
           />
         </div>
 
         <Button
           id="login-submit"
           type="submit"
-          disabled={loading}
+          disabled={isSubmitting}
         >
-          {loading ? "..." : "[Sign In]"}
+          {isSubmitting ? "[Signing In...]" : "[Sign In]"}
         </Button>
       </form>
     </div>

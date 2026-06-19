@@ -1,10 +1,20 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useTheme } from "next-themes"
-import { useSyncExternalStore } from "react"
-import { useSession } from "@/lib/auth-client"
+import { useState, useSyncExternalStore } from "react"
+import { authClient, useSession } from "@/lib/auth-client"
+import { runAuthAction } from "@/lib/auth-action"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 function useIsMounted() {
   return useSyncExternalStore(
@@ -31,14 +41,40 @@ function ThemeToggle() {
 }
 
 export function Navbar() {
+  const router = useRouter()
   const { data: session, isPending } = useSession()
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   const displayName =
     session?.user?.name?.trim() ||
     session?.user?.email?.split("@")[0] ||
     "user"
 
-  const profileHref = session?.user?.role === "admin" ? "/admin" : "/"
+  const profileHref = session?.user?.role === "admin" ? "/admin" : "/dashboard"
+
+  async function handleLogout() {
+    if (isLoggingOut) {
+      return
+    }
+
+    setIsLoggingOut(true)
+
+    try {
+      const { error } = await runAuthAction(
+        authClient.signOut(),
+        "Unable to logout"
+      )
+
+      if (error) {
+        return
+      }
+
+      router.refresh()
+      router.push("/login")
+    } finally {
+      setIsLoggingOut(false)
+    }
+  }
 
   return (
     <header className="w-full border-b border-border bg-background sticky top-0 z-50">
@@ -53,9 +89,6 @@ export function Navbar() {
         >
           <span className="text-sm font-semibold tracking-widest uppercase text-foreground">
             Advent
-          </span>
-          <span className="text-xs text-muted-foreground tracking-wide">
-            2024
           </span>
         </Link>
 
@@ -81,9 +114,30 @@ export function Navbar() {
                 [...]
               </Button>
             ) : session ? (
-              <Button variant="ghost" asChild>
-                <Link href={profileHref}>[{displayName}]</Link>
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost">[{displayName}]</Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel className="font-mono">
+                    @{displayName}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href={profileHref}>Go to {session.user.role === "admin" ? "Admin" : "Dashboard"}</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    disabled={isLoggingOut}
+                    onSelect={(event) => {
+                      event.preventDefault()
+                      void handleLogout()
+                    }}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    {isLoggingOut ? "Logging out..." : "Logout"}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <Button variant="ghost" asChild>
                 <Link href="/login" id="nav-login">[Login]</Link>
