@@ -2,36 +2,44 @@ import Link from "next/link"
 
 export default function NotFound() {
   return (
-    <div className="not-found">
-      <div className="not-found-code">
-        <span className="not-found-star">*</span>
+    <div className="relative flex flex-col flex-1 items-center justify-center gap-6 py-16 px-6 overflow-hidden text-center">
+      <div className="flex items-center gap-1 font-mono font-bold leading-none text-foreground tracking-tighter text-8xl animate-not-found-flicker">
+        <span className="text-primary">*</span>
         <span>4</span>
-        <span className="not-found-star">0</span>
+        <span className="text-primary">0</span>
         <span>4</span>
-        <span className="not-found-star">*</span>
+        <span className="text-primary">*</span>
       </div>
 
-      <h1 className="not-found-title">Page Not Found</h1>
+      <h1 className="font-mono text-base font-normal tracking-widest uppercase text-muted-foreground m-0">
+        Page Not Found
+      </h1>
 
-      <p className="not-found-desc">
+      <p className="text-sm text-muted-foreground max-w-xs leading-relaxed m-0">
         This puzzle piece doesn&apos;t exist — or maybe you&apos;re not{" "}
-        <span className="not-found-accent">authenticated</span> yet.
+        <span className="text-primary font-mono">authenticated</span> yet.
       </p>
 
-      <div className="not-found-actions">
-        <Link href="/" className="not-found-btn-primary">
+      <div className="flex items-center gap-4 flex-wrap justify-center mt-2">
+        <Link
+          href="/"
+          className="font-mono text-xs text-primary-foreground bg-primary no-underline px-5 py-2 rounded-sm border border-transparent transition-opacity duration-150 hover:opacity-85 tracking-wider"
+        >
           ← Return Home
         </Link>
-        <Link href="/login" className="not-found-btn-secondary">
+        <Link
+          href="/login"
+          className="font-mono text-xs text-muted-foreground no-underline px-5 py-2 rounded-sm border border-border transition-colors duration-150 hover:text-foreground hover:border-foreground tracking-wider"
+        >
           [Login]
         </Link>
       </div>
 
-      <div className="not-found-grid" aria-hidden="true">
+      <div className="absolute inset-0 grid grid-cols-10 pointer-events-none z-0 p-4 gap-1" aria-hidden="true">
         {Array.from({ length: 80 }).map((_, i) => (
           <span
             key={i}
-            className="not-found-dot"
+            className="font-mono text-sm text-muted-foreground animate-dot-blink select-none"
             style={{ animationDelay: `${(i * 0.05) % 2}s` }}
           >
             ·

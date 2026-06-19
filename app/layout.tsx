@@ -35,11 +35,13 @@ export default function RootLayout({
         spaceGrotesk.variable
       )}
     >
-      <body>
+      <body className="flex flex-col min-h-dvh">
         <ThemeProvider>
-          <div className="page-wrapper">
+          <div className="flex flex-col flex-1">
             <Navbar />
-            <main className="page-container">{children}</main>
+            <main className="w-4/5 max-w-6xl mx-auto flex-1 flex flex-col">
+              {children}
+            </main>
           </div>
         </ThemeProvider>
       </body>
