@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
 import { useTheme } from "next-themes"
 import { useState, useSyncExternalStore } from "react"
 import { authClient, useSession } from "@/lib/auth-client"
@@ -20,7 +21,7 @@ function useIsMounted() {
   return useSyncExternalStore(
     () => () => {},
     () => true,
-    () => false,
+    () => false
   )
 }
 
@@ -42,13 +43,12 @@ function ThemeToggle() {
 
 export function Navbar() {
   const router = useRouter()
+  const pathname = usePathname()
   const { data: session, isPending } = useSession()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   const displayName =
-    session?.user?.name?.trim() ||
-    session?.user?.email?.split("@")[0] ||
-    "user"
+    session?.user?.name?.trim() || session?.user?.email?.split("@")[0] || "user"
 
   const profileHref = session?.user?.role === "admin" ? "/admin" : "/dashboard"
 
@@ -77,37 +77,38 @@ export function Navbar() {
   }
 
   return (
-    <header className="w-full border-b border-border bg-background sticky top-0 z-50">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-background">
       <nav
-        className="w-4/5 max-w-6xl mx-auto h-12 flex items-center justify-between"
+        className="mx-auto flex h-12 w-4/5 max-w-6xl items-center justify-between"
         aria-label="Main navigation"
       >
         <Link
           href="/"
-          className="flex items-baseline gap-1.5 no-underline text-foreground font-mono"
+          className="flex items-baseline gap-1.5 font-mono text-foreground no-underline"
           aria-label="Advent home"
         >
-          <span className="text-sm font-semibold tracking-widest uppercase text-foreground">
+          <span className="text-sm font-semibold tracking-widest text-foreground uppercase">
             Advent
           </span>
         </Link>
 
-        <ul className="list-none m-0 p-0 flex items-center gap-1" role="list">
-          <li>
-            <Button variant="ghost" asChild>
-              <Link href="/puzzles">[Puzzles]</Link>
-            </Button>
-          </li>
-          <li>
-            <Button variant="ghost" asChild>
-              <Link href="/leaderboard">[Leaderboard]</Link>
-            </Button>
-          </li>
-          <li>
-            <Button variant="ghost" asChild>
-              <Link href="/about">[About]</Link>
-            </Button>
-          </li>
+        <ul className="m-0 flex list-none items-center gap-1 p-0" role="list">
+          {[
+            { href: "/dashboard", text: "Dashboard" },
+            { href: "/leaderboard", text: "Leaderboard" },
+            { href: "/about", text: "About" },
+          ].map((item) => (
+            <li key={item.href}>
+              <Button variant="ghost" className="text-sm" asChild>
+                <Link
+                  href={item.href}
+                  className={pathname === item.href ? "text-primary/70" : undefined}
+                >
+                  {`[${item.text}]`}
+                </Link>
+              </Button>
+            </li>
+          ))}
           <li>
             {isPending ? (
               <Button variant="ghost" disabled>
@@ -124,7 +125,10 @@ export function Navbar() {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link href={profileHref}>Go to {session.user.role === "admin" ? "Admin" : "Dashboard"}</Link>
+                    <Link href={profileHref}>
+                      Go to{" "}
+                      {session.user.role === "admin" ? "Admin" : "Dashboard"}
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     disabled={isLoggingOut}
@@ -140,7 +144,9 @@ export function Navbar() {
               </DropdownMenu>
             ) : (
               <Button variant="ghost" asChild>
-                <Link href="/login" id="nav-login">[Login]</Link>
+                <Link href="/login" id="nav-login">
+                  [Login]
+                </Link>
               </Button>
             )}
           </li>
