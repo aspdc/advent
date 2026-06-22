@@ -1,6 +1,6 @@
 import { Elysia, Context } from "elysia"
 import { auth } from "@/lib/auth"
-import { env } from "@/lib/env"
+import { serverEnv } from "@/lib/env"
 import { db } from "@/db"
 import { tryCatch } from "@/lib/try-catch"
 
@@ -14,7 +14,7 @@ async function ensureAdmin() {
   const users = db.collection("user")
 
   const { data: existing, error: findError } = await tryCatch(
-    users.findOne({ email: env.ADMIN_EMAIL })
+    users.findOne({ email: serverEnv.ADMIN_EMAIL })
   )
 
   if (findError) {
@@ -24,7 +24,7 @@ async function ensureAdmin() {
   if (existing) {
     if (existing.role !== "admin") {
       const { error: updateError } = await tryCatch(
-        users.updateOne({ email: env.ADMIN_EMAIL }, { $set: { role: "admin" } })
+        users.updateOne({ email: serverEnv.ADMIN_EMAIL }, { $set: { role: "admin" } })
       )
 
       if (updateError) {
@@ -39,8 +39,8 @@ async function ensureAdmin() {
     auth.api.createUser({
       body: {
         name: "Admin",
-        email: env.ADMIN_EMAIL,
-        password: env.ADMIN_PASSWORD,
+        email: serverEnv.ADMIN_EMAIL,
+        password: serverEnv.ADMIN_PASSWORD,
         role: "admin",
       },
     })
@@ -81,7 +81,7 @@ const betterAuthView = async (context: Context) => {
 
 async function seedAdmin(context: Context) {
   const secret = context.request.headers.get("x-seed-secret")
-  if (secret !== env.BETTER_AUTH_SECRET) {
+  if (secret !== serverEnv.BETTER_AUTH_SECRET) {
     return new Response("Unauthorized", { status: 401 })
   }
 

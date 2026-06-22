@@ -1,4 +1,4 @@
 import { treaty } from "@elysia/eden"
-import { env } from "@/lib/env"
+import { serverEnv } from "@/lib/env"
 
-export const api = treaty(env.BETTER_AUTH_URL).api
+export const api = treaty(serverEnv.BETTER_AUTH_URL).api
