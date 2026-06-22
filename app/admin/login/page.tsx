@@ -7,6 +7,7 @@ import { runAuthAction } from "@/lib/auth-action"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import Password from "@/components/ui/password-input"
 
 export default function AdminLoginPage() {
   const router = useRouter()
@@ -14,7 +15,6 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
@@ -88,7 +88,7 @@ export default function AdminLoginPage() {
 
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="admin-password">Password</Label>
-          <Input
+          <Password
             id="admin-password"
             type="password"
             autoComplete="current-password"

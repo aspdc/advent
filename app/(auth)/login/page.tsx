@@ -7,6 +7,7 @@ import { runAuthAction } from "@/lib/auth-action"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import Password from "@/components/ui/password-input"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -88,7 +89,7 @@ export default function LoginPage() {
 
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="password">Password</Label>
-          <Input
+          <Password
             id="password"
             type="password"
             autoComplete="current-password"
