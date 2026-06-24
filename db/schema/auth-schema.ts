@@ -5,7 +5,6 @@ import {
   timestamp,
   boolean,
   integer,
-  jsonb,
   index,
 } from "drizzle-orm/pg-core";
 
@@ -25,9 +24,6 @@ export const user = pgTable("user", {
   banReason: text("ban_reason"),
   banExpires: timestamp("ban_expires"),
   lastSolvedProblemId: integer("last_solved_problem_id"),
-  solvedProblems: jsonb("solved_problems")
-    .default({ totalSolved: 0, solved: [] })
-    .notNull(),
   score: integer("score").default(0).notNull(),
 });
 

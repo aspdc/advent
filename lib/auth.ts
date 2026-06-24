@@ -19,14 +19,6 @@ export const auth = betterAuth({
         defaultValue: null,
         input: false,
       },
-      solvedProblems: {
-        type: "json",
-        defaultValue: {
-          totalSolved: 0,
-          solved: []
-        },
-        input: false
-      },
       score: {
         type: "number",
         defaultValue: 0,
