@@ -30,6 +30,14 @@ export const auth = betterAuth({
       }
     }
   },
+  socialProviders: {
+    google: {
+      prompt: "select_account",
+      clientId: serverEnv.GOOGLE_CLIENT_ID,
+      clientSecret: serverEnv.GOOGLE_CLIENT_SECRET,
+      disableSignUp: false
+    }
+  },
   emailAndPassword: {
     enabled: true,
     disableSignUp: true,

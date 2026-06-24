@@ -50,7 +50,10 @@ export default function LoginPage() {
       const formData = new FormData(e.currentTarget)
       const turnstileToken = String(formData.get("cf-turnstile-response"))
       const { error: signInError } = await runAuthAction(
-        authClient.signIn.email({ email, password }),
+        authClient.signIn.social({
+          provider: "google",
+          callbackURL: "/",
+        }),
         turnstileToken,
         "Unable to sign in"
       )
@@ -105,39 +108,13 @@ export default function LoginPage() {
           </p>
         )}
 
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            autoComplete="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            disabled={isSubmitting}
-          />
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="password">Password</Label>
-          <Password
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={isSubmitting}
-          />
-        </div>
-
         <div
           className="cf-turnstile w-full"
           data-sitekey={clientEnv.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_KEY}
         ></div>
 
         <Button id="login-submit" type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "[Signing In...]" : "[Sign In]"}
+          {isSubmitting ? "[Signing In...]" : "[Sign In with Google]"}
         </Button>
       </form>
     </div>

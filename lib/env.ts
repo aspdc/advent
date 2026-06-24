@@ -7,6 +7,8 @@ const serverEnvSchema = z.object({
   ADMIN_EMAIL: z.email(),
   ADMIN_PASSWORD: z.string(),
   CLOUDFLARE_TURNSTILE_SECRET: z.string(),
+  GOOGLE_CLIENT_ID: z.string(),
+  GOOGLE_CLIENT_SECRET: z.string()
 });
 
 const clientEnvSchema = z.object({
@@ -17,6 +19,6 @@ export const clientEnv = clientEnvSchema.parse({
   NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_KEY: process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_KEY,
 });
 
-export const serverEnv = typeof window === "undefined" 
-  ? serverEnvSchema.parse(process.env) 
+export const serverEnv = typeof window === "undefined"
+  ? serverEnvSchema.parse(process.env)
   : {} as z.infer<typeof serverEnvSchema>; 
