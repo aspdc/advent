@@ -24,7 +24,7 @@ export const user = pgTable("user", {
   banned: boolean("banned").default(false),
   banReason: text("ban_reason"),
   banExpires: timestamp("ban_expires"),
-  lastSolvedProblemId: integer("last_solved_problem_id").notNull(),
+  lastSolvedProblemId: integer("last_solved_problem_id"),
   solvedProblems: jsonb("solved_problems")
     .default({ totalSolved: 0, solved: [] })
     .notNull(),
