@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@aws-sdk/client-lambda": "^3.1075.0",
     "@elysia/eden": "^1.4.10",
     "@sinclair/typebox": "^0.34.49",
     "better-auth": "^1.6.19",
