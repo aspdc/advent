@@ -1,13 +1,17 @@
 import { betterAuth } from "better-auth"
-import { mongodbAdapter } from "better-auth/adapters/mongodb"
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { admin } from "better-auth/plugins"
-import { client, db } from "@/db"
+import { db } from "@/db"
+import * as schema from "@/db/schema"
 import { serverEnv } from "@/lib/env"
 
 export const auth = betterAuth({
   secret: serverEnv.BETTER_AUTH_SECRET,
   baseURL: serverEnv.BETTER_AUTH_URL,
-  database: mongodbAdapter(db, { client }),
+  database: drizzleAdapter(db, {
+    provider: "pg",
+    schema,
+  }),
   user: {
     additionalFields: {
       lastSolvedProblemId: {

@@ -1,27 +1,16 @@
 services:
-  mongodb:
-    image: mongo:latest
-    container_name: mongodb
+  postgres:
+    image: postgres:17
+    container_name: advent-pg
     restart: unless-stopped
-    ports:
-      - "27017:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password
-    volumes:
-      - mongo_data:/data/db
-
-  dbgate:
-    image: dbgate/dbgate:latest
-    container_name: dbgate
-    restart: unless-stopped
-    depends_on:
-      - mongodb
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
     ports:
-      - "8000:3000"
+      - "5432:5432"
     volumes:
-      - dbgate_data:/root/.dbgate
+      - postgres_data:/var/lib/postgresql/data
 
 volumes:
-  mongo_data:
-  dbgate_data:
+  postgres_data:
