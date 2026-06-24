@@ -1,3 +1,4 @@
+CREATE TYPE "public"."problem_id" AS ENUM('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15');--> statement-breakpoint
 CREATE TABLE "account" (
 	"id" text PRIMARY KEY NOT NULL,
 	"account_id" text NOT NULL,
@@ -39,8 +40,7 @@ CREATE TABLE "user" (
 	"banned" boolean DEFAULT false,
 	"ban_reason" text,
 	"ban_expires" timestamp,
-	"last_solved_problem_id" integer NOT NULL,
-	"solved_problems" jsonb DEFAULT '{"totalSolved":0,"solved":[]}'::jsonb NOT NULL,
+	"last_solved_problem_id" integer,
 	"score" integer DEFAULT 0 NOT NULL,
 	CONSTRAINT "user_email_unique" UNIQUE("email")
 );
@@ -54,8 +54,17 @@ CREATE TABLE "verification" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "submissions" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"problemId" "problem_id",
+	"user_id" text NOT NULL,
+	"submitted_value" integer NOT NULL,
+	"submitted_at" timestamp DEFAULT now()
+);
+--> statement-breakpoint
 ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "submissions" ADD CONSTRAINT "submissions_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "account_userId_idx" ON "account" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "session_userId_idx" ON "session" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "verification_identifier_idx" ON "verification" USING btree ("identifier");

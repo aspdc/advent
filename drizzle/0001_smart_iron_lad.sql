@@ -1,1 +1,0 @@
-ALTER TABLE "user" ALTER COLUMN "last_solved_problem_id" DROP NOT NULL;

@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1782282050351,
-      "tag": "0000_flippant_wallow",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1782282863358,
-      "tag": "0001_smart_iron_lad",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1782299841786,
-      "tag": "0002_spooky_nitro",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1782301850239,
-      "tag": "0003_serious_the_professor",
+      "when": 1782302376819,
+      "tag": "0000_tan_spacker_dave",
       "breakpoints": true
     }
   ]

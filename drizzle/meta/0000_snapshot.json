@@ -1,5 +1,5 @@
 {
-  "id": "1f9acbbc-fa25-47ed-bfcc-4697d22da897",
+  "id": "bcd92415-3e3d-4522-94d1-b8a88301ccf5",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -310,14 +310,7 @@
           "name": "last_solved_problem_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
-        },
-        "solved_problems": {
-          "name": "solved_problems",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'{\"totalSolved\":0,\"solved\":[]}'::jsonb"
+          "notNull": false
         },
         "score": {
           "name": "score",
@@ -409,9 +402,90 @@
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
+    },
+    "public.submissions": {
+      "name": "submissions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "problemId": {
+          "name": "problemId",
+          "type": "problem_id",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "submitted_value": {
+          "name": "submitted_value",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "submitted_at": {
+          "name": "submitted_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "submissions_user_id_user_id_fk": {
+          "name": "submissions_user_id_user_id_fk",
+          "tableFrom": "submissions",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
-  "enums": {},
+  "enums": {
+    "public.problem_id": {
+      "name": "problem_id",
+      "schema": "public",
+      "values": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ]
+    }
+  },
   "schemas": {},
   "sequences": {},
   "roles": {},

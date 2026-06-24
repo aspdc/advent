@@ -12,7 +12,7 @@ import {
 } from "drizzle-orm/pg-core"
 import { user } from "./auth-schema"
 
-const problemIdEnum = pgEnum(
+export const problemIdEnum = pgEnum(
   "problem_id",
   Array.from({ length: 15 }, (_, i) => String(i + 1)) as unknown as [
     string,
