@@ -73,13 +73,6 @@ export function AsciiArt() {
           </pre>
         ))}
       </div>
-      <p className="text-center text-xs text-muted-foreground">
-        {isPending
-          ? "Loading..."
-          : session
-            ? `${solvedCount}/${TOTAL_PROBLEMS} problems solved`
-            : "Sign in to track your progress"}
-      </p>
     </div>
   )
 }
