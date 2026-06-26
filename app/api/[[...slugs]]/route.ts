@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm"
 
 import { auth } from "@/lib/auth"
 import { serverEnv } from "@/lib/env"
+import { checkAdminLoginRateLimit } from "@/lib/rate-limit"
 import { db } from "@/db"
 import { user } from "@/db/schema"
 import { tryCatch } from "@/lib/try-catch"
@@ -80,6 +81,23 @@ async function ensureAdminOnce() {
 const betterAuthView = async (context: Context) => {
   if (!BETTER_AUTH_ACCEPT_METHODS.includes(context.request.method)) {
     return new Response("Method Not Allowed", { status: 405 })
+  }
+
+  if (
+    context.request.method === "POST" &&
+    new URL(context.request.url).pathname.endsWith("/auth/sign-in/email")
+  ) {
+    const forwardedFor = context.request.headers.get("x-forwarded-for")
+    const ip = forwardedFor ? forwardedFor.split(",")[0].trim() : "unknown"
+
+    const { success: limitOk } = await checkAdminLoginRateLimit(ip)
+
+    if (!limitOk) {
+      return Response.json(
+        { error: "Too many login attempts. Try again in a moment." },
+        { status: 429 },
+      )
+    }
   }
 
   const { error: seedError } = await tryCatch(ensureAdminOnce())

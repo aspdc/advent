@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import { useEffect, useState } from "react"
@@ -7,32 +6,12 @@ import { toast } from "sonner"
 import { authClient } from "@/lib/auth-client"
 import { runAuthAction } from "@/lib/auth-action"
 import { Button } from "@/components/ui/button"
-import { clientEnv } from "@/lib/env"
 
 export default function LoginPage() {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isChecking, setIsChecking] = useState(true)
-
-  useEffect(() => {
-    const script = document.createElement("script")
-    script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js"
-    script.async = true
-    script.defer = true
-    document.head.appendChild(script)
-
-    return () => {
-      if (typeof window !== "undefined" && (window as any).turnstile) {
-        try {
-          ;(window as any).turnstile.remove()
-        } catch (e) {
-          console.warn("Turnstile cleanup skipped:", e)
-        }
-      }
-      document.head.removeChild(script)
-    }
-  }, [])
 
   useEffect(() => {
     async function checkSession() {
@@ -65,14 +44,11 @@ export default function LoginPage() {
     setIsSubmitting(true)
 
     try {
-      const formData = new FormData(e.currentTarget)
-      const turnstileToken = String(formData.get("cf-turnstile-response"))
       const { error: signInError } = await runAuthAction(
         authClient.signIn.social({
           provider: "google",
           callbackURL: "/",
         }),
-        turnstileToken,
         "Unable to sign in"
       )
 
@@ -81,8 +57,6 @@ export default function LoginPage() {
         toast.error("Sign in failed", {
           description: signInError,
         })
-        if (typeof window !== "undefined" && (window as any).turnstile)
-          (window as any).turnstile.reset()
         return
       }
 
@@ -148,11 +122,6 @@ export default function LoginPage() {
             {error}
           </p>
         )}
-
-        <div
-          className="cf-turnstile w-full"
-          data-sitekey={clientEnv.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_KEY}
-        ></div>
 
         <Button id="login-submit" type="submit" disabled={isSubmitting}>
           {isSubmitting ? "[Signing In...]" : "[Sign In with Google]"}

@@ -17,3 +17,14 @@ const ratelimit = new Ratelimit({
 export async function checkRateLimit(identifier: string) {
   return ratelimit.limit(identifier)
 }
+
+const adminLoginRatelimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(3, "1 m"),
+  analytics: true,
+  prefix: "ratelimit:admin-login",
+})
+
+export async function checkAdminLoginRateLimit(identifier: string) {
+  return adminLoginRatelimit.limit(identifier)
+}

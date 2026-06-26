@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import { useEffect, useState } from "react"
@@ -10,7 +9,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Password from "@/components/ui/password-input"
-import { clientEnv } from "@/lib/env"
 
 export default function AdminLoginPage() {
   const router = useRouter()
@@ -19,25 +17,6 @@ export default function AdminLoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isChecking, setIsChecking] = useState(true)
-
-  useEffect(() => {
-    const script = document.createElement("script")
-    script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js"
-    script.async = true
-    script.defer = true
-    document.head.appendChild(script)
-
-    return () => {
-      if (typeof window !== "undefined" && (window as any).turnstile) {
-        try {
-          ;(window as any).turnstile.remove()
-        } catch (e) {
-          console.warn("Turnstile cleanup skipped:", e)
-        }
-      }
-      document.head.removeChild(script)
-    }
-  }, [])
 
   useEffect(() => {
     async function checkSession() {
@@ -70,11 +49,8 @@ export default function AdminLoginPage() {
     setIsSubmitting(true)
 
     try {
-      const formData = new FormData(e.currentTarget)
-      const turnstileToken = String(formData.get("cf-turnstile-response"))
       const { error: signInError } = await runAuthAction(
         authClient.signIn.email({ email, password }),
-        turnstileToken,
         "Unable to sign in"
       )
 
@@ -83,8 +59,6 @@ export default function AdminLoginPage() {
         toast.error("Sign in failed", {
           description: signInError,
         })
-        if (typeof window !== "undefined" && (window as any).turnstile)
-          (window as any).turnstile.reset()
         return
       }
 
@@ -173,11 +147,6 @@ export default function AdminLoginPage() {
             disabled={isSubmitting}
           />
         </div>
-
-        <div
-          className="cf-turnstile"
-          data-sitekey={clientEnv.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_KEY}
-        ></div>
 
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? "[Signing In...]" : "[Sign In]"}
