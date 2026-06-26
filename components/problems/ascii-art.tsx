@@ -16,7 +16,7 @@ const ART_LINES = [
   "                                 ██ |                                       ",
   "                                 ██ |                                       ",
   "                                 \\__|                                       ",
-];
+]
 
 const LINE_LENGTH = ART_LINES[0].length
 
@@ -37,7 +37,7 @@ function buildRevealedLines(solvedCount: number): string[] {
 }
 
 export function AsciiArt() {
-  const { data: session, isPending } = useSession()
+  const { data: session } = useSession()
   const [solvedCount, setSolvedCount] = useState(0)
 
   useEffect(() => {
