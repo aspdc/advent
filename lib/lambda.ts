@@ -22,13 +22,13 @@ export const lambda = new LambdaClient({
 
 export async function executeLambda(
   input:
-    | { action: "generate"; payload: generateRequest }
-    | { action: "validate"; payload: validateRequest }
+    | { action: "generate"; payload: Omit<generateRequest, "action"> }
+    | { action: "validate"; payload: Omit<validateRequest, "action"> }
 ) {
   const parsedPayload =
     input.action === "generate"
-      ? GenerateRequestSchema.parse(input.payload)
-      : ValidateRequestSchema.parse(input.payload)
+      ? GenerateRequestSchema.parse({ ...input.payload, action: "generate" })
+      : ValidateRequestSchema.parse({ ...input.payload, action: "validate" })
 
   const command = new InvokeCommand({
     FunctionName: serverEnv.LAMBDA_NAME,
