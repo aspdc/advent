@@ -3,11 +3,8 @@ import {
   pgTable,
   text,
   timestamp,
-  boolean,
   integer,
-  index,
   serial,
-  date,
   pgEnum,
 } from "drizzle-orm/pg-core"
 import { user } from "./auth-schema"

@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "@aws-sdk/client-lambda": "^3.1075.0",
-    "@elysia/eden": "^1.4.10",
     "@sinclair/typebox": "^0.34.49",
     "better-auth": "^1.6.19",
     "class-variance-authority": "^0.7.1",
