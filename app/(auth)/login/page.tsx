@@ -47,7 +47,7 @@ export default function LoginPage() {
       const { error: signInError } = await runAuthAction(
         authClient.signIn.social({
           provider: "google",
-          callbackURL: "/",
+          callbackURL: "/dashboard",
         }),
         "Unable to sign in"
       )
