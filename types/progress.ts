@@ -5,3 +5,7 @@ export interface ProgressItem {
   submittedValue: number
   submittedAt: Date | null
 }
+
+export const TOTAL_PROBLEMS = 15
+
+export type ProblemStatus = "locked" | "unlocked" | "solved"

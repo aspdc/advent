@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import { authClient } from "@/lib/auth-client"
 import { runAuthAction } from "@/lib/auth-action"
 import { Button } from "@/components/ui/button"
@@ -12,6 +13,7 @@ export default function LoginPage() {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isChecking, setIsChecking] = useState(true)
 
   useEffect(() => {
     const script = document.createElement("script")
@@ -32,7 +34,27 @@ export default function LoginPage() {
     }
   }, [])
 
-  async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
+  useEffect(() => {
+    async function checkSession() {
+      const { data: session } = await runAuthAction(
+        authClient.getSession(),
+        "Unable to load session"
+      )
+
+      if (session) {
+        const path =
+          session.user.role === "admin" ? "/admin" : "/dashboard"
+        router.replace(path)
+        return
+      }
+
+      setIsChecking(false)
+    }
+
+    checkSession()
+  }, [router])
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
 
     if (isSubmitting) {
@@ -56,6 +78,9 @@ export default function LoginPage() {
 
       if (signInError) {
         setError(signInError)
+        toast.error("Sign in failed", {
+          description: signInError,
+        })
         if (typeof window !== "undefined" && (window as any).turnstile)
           (window as any).turnstile.reset()
         return
@@ -68,17 +93,37 @@ export default function LoginPage() {
 
       if (sessionError) {
         setError(sessionError)
+        toast.error("Session error", {
+          description: sessionError,
+        })
         return
       }
 
+      const name =
+        session?.user?.name ||
+        session?.user?.email?.split("@")[0] ||
+        "User"
+
       const redirectPath =
         session?.user?.role === "admin" ? "/admin" : "/dashboard"
+
+      toast.success(`Welcome, ${name}!`, {
+        description: `Redirecting to ${session?.user?.role === "admin" ? "admin panel" : "dashboard"}...`,
+      })
 
       router.refresh()
       router.push(redirectPath)
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  if (isChecking) {
+    return (
+      <div className="flex flex-1 items-center justify-center p-8">
+        <p className="text-sm text-muted-foreground">Checking session...</p>
+      </div>
+    )
   }
 
   return (
