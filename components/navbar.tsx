@@ -52,7 +52,7 @@ export function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full">
+    <header className="w-full">
       <nav
         className="mx-auto flex h-12 w-4/5 max-w-6xl items-center justify-between"
         aria-label="Main navigation"

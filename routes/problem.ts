@@ -74,7 +74,13 @@ problemRoutes.post("/generate", async ({ body, user, set }) => {
   }
 
   set.status = 200
-  return { success: true, data: result.data }
+
+  const generateBody = JSON.parse(result.data.body)
+
+  return {
+    success: true,
+    data: { ...generateBody, isSolved: solved.has(String(problemId)) },
+  }
 })
 
 const validateBodySchema = z
@@ -120,24 +126,29 @@ problemRoutes.post("/validate", async ({ body, user, set }) => {
     return { success: false, error: result.errorMessage }
   }
 
-  const { error: insertError } = await tryCatch(
-    db
-      .insert(submission)
-      .values({
-        userId: user.id,
-        problemId: String(problemId),
-        submittedValue: answer as number,
-      })
-      .onConflictDoNothing(),
-  )
+  const validateBody = JSON.parse(result.data.body)
 
-  if (insertError) {
-    set.status = 500
-    return { success: false, error: "Failed to record submission" }
+  if (validateBody.isCorrect) {
+    const { error: insertError } = await tryCatch(
+      db
+        .insert(submission)
+        .values({
+          userId: user.id,
+          problemId: String(problemId),
+          submittedValue: answer as number,
+        })
+        .onConflictDoNothing(),
+    )
+
+    if (insertError) {
+      set.status = 500
+      return { success: false, error: "Failed to record submission" }
+    }
   }
 
   set.status = 200
-  return { success: true, data: result.data }
+
+  return { success: true, data: validateBody }
 })
 
 export { problemRoutes }

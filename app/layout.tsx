@@ -38,7 +38,7 @@ export default function RootLayout({
       <body className="flex flex-col min-h-dvh">
           <div className="flex flex-col flex-1">
             <Navbar />
-            <main className="w-4/5 max-w-6xl mx-auto flex-1 flex flex-col">
+            <main className="w-11/12 max-w-7xl mx-auto flex-1 flex flex-col">
               {children}
               <Toaster
                 theme="dark"
