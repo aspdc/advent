@@ -1,18 +1,19 @@
 import { Progress } from "@/components/dashboard/progress"
-import type { ProgressItem } from "@/types/progress"
 import { protectRoute } from "@/lib/protect-route"
-import { tryCatch } from "@/lib/try-catch"
+import { db } from "@/db"
+import { submission } from "@/db/schema"
+import { eq } from "drizzle-orm"
 import Link from "next/link"
 
 export const dynamic = "force-dynamic"
 
 export default async function DashboardPage() {
   const session = await protectRoute()
-  const progressResponse = await tryCatch<ProgressItem[]>(
-    fetch("/api/user/progress")
-      .then((res) => res.json())
-      .then((res) => res.data)
-  )
+
+  const submissions = await db
+    .select()
+    .from(submission)
+    .where(eq(submission.userId, session.user.id))
 
   return (
     <div className="flex flex-1 flex-col gap-2 py-10">
@@ -28,7 +29,7 @@ export default async function DashboardPage() {
         to see how you rank against other participants!
       </p>
       <div className="mt-4">
-        <Progress progress={progressResponse.data ?? []} />
+        <Progress progress={submissions} />
       </div>
     </div>
   )

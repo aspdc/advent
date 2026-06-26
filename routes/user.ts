@@ -9,10 +9,8 @@ const userRoutes = new Elysia({prefix: "/user"})
   .use(isAuthenticated)
   .use(hasRole(["user", "admin"]))
 
-userRoutes.get("/progress", async ({ headers, set }) => {
-  const userId = headers["user-id"]
-
-  if (!userId) {
+userRoutes.get("/progress", async ({ user, set }) => {
+  if (!user) {
     set.status = 401
     return { success: false, data: null, error: "Unauthorized" }
   }
@@ -21,7 +19,7 @@ userRoutes.get("/progress", async ({ headers, set }) => {
     db
       .select()
       .from(submission)
-      .where(eq(submission.userId, userId as string))
+      .where(eq(submission.userId, user.id))
   )
 
   if (result.error) {
