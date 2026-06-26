@@ -1,4 +1,4 @@
-import { protectProblem } from "@/lib/protect-problem"
+import { protectProblem } from "@/lib/problems/protect"
 
 export const dynamic = "force-dynamic"
 
@@ -19,7 +19,7 @@ export default async function ProblemPage({
       <p className="text-sm text-muted-foreground">
         Signed in as{" "}
         <span className="font-mono text-primary">
-          {session.user.name || session.user.email}
+          {session.user.name}
         </span>
       </p>
     </div>

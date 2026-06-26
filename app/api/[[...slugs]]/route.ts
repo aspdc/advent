@@ -7,6 +7,7 @@ import { db } from "@/db"
 import { user } from "@/db/schema"
 import { tryCatch } from "@/lib/try-catch"
 import { userRoutes } from "@/routes/user"
+import { problemRoutes } from "@/routes/problem"
 
 declare global {
   var _adminSeedPromise: Promise<void> | undefined
@@ -134,6 +135,7 @@ const app = new Elysia({ prefix: "/api" })
   .all("/auth", betterAuthView)
   .post("/seed-admin", seedAdmin)
   .use(userRoutes)
+  .use(problemRoutes)
   .onError(({ code, error, path, request }) => {
     console.error("Unhandled Elysia error")
     console.error({
