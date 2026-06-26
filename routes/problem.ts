@@ -105,6 +105,11 @@ problemRoutes.post("/validate", async ({ body, user, set }) => {
     return { success: false, error: "Problem is locked" }
   }
 
+  if (solved.has(String(problemId))) {
+    set.status = 200
+    return { success: true, data: null }
+  }
+
   const result = await executeLambda({
     action: "validate",
     payload: { email: user.email, problemId, answer },
@@ -116,11 +121,14 @@ problemRoutes.post("/validate", async ({ body, user, set }) => {
   }
 
   const { error: insertError } = await tryCatch(
-    db.insert(submission).values({
-      userId: user.id,
-      problemId: String(problemId),
-      submittedValue: answer as number,
-    })
+    db
+      .insert(submission)
+      .values({
+        userId: user.id,
+        problemId: String(problemId),
+        submittedValue: answer as number,
+      })
+      .onConflictDoNothing(),
   )
 
   if (insertError) {

@@ -6,6 +6,7 @@ import {
   integer,
   serial,
   pgEnum,
+  unique,
 } from "drizzle-orm/pg-core"
 import { user } from "./auth-schema"
 
@@ -17,18 +18,22 @@ export const problemIdEnum = pgEnum(
   ]
 )
 
-export const submission = pgTable("submissions", {
-  id: serial("id").primaryKey(),
-  problemId: problemIdEnum(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, {
-      onDelete: "no action",
-      onUpdate: "no action",
-    }),
-  submittedValue: integer("submitted_value").notNull(),
-  submittedAt: timestamp("submitted_at", { mode: "date" }).defaultNow(),
-})
+export const submission = pgTable(
+  "submissions",
+  {
+    id: serial("id").primaryKey(),
+    problemId: problemIdEnum(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, {
+        onDelete: "no action",
+        onUpdate: "no action",
+      }),
+    submittedValue: integer("submitted_value").notNull(),
+    submittedAt: timestamp("submitted_at", { mode: "date" }).defaultNow(),
+  },
+  (table) => [unique().on(table.userId, table.problemId)],
+)
 
 export const userSubmissionRelation = relations(user, ({ many }) => ({
   submissions: many(submission),
