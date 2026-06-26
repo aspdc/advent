@@ -1,3 +1,5 @@
+import { Progress } from "@/components/dashboard/progress"
+import type { ProgressItem } from "@/types/progress"
 import { protectRoute } from "@/lib/protect-route"
 import { tryCatch } from "@/lib/try-catch"
 import Link from "next/link"
@@ -6,9 +8,10 @@ export const dynamic = "force-dynamic"
 
 export default async function DashboardPage() {
   const session = await protectRoute()
-  const progressResponse = await tryCatch(
+  const progressResponse = await tryCatch<ProgressItem[]>(
     fetch("/api/user/progress")
       .then((res) => res.json())
+      .then((res) => res.data)
   )
 
   return (
@@ -25,8 +28,7 @@ export default async function DashboardPage() {
         to see how you rank against other participants!
       </p>
       <div className="mt-4">
-        {/* here goes the progress */}
-        {JSON.stringify(progressResponse)}
+        <Progress progress={progressResponse.data ?? []} />
       </div>
     </div>
   )

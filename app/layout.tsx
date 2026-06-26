@@ -1,7 +1,6 @@
 import { Geist_Mono, Space_Grotesk } from "next/font/google"
 
 import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
 import { Navbar } from "@/components/navbar"
 import { cn } from "@/lib/utils"
 
@@ -36,14 +35,12 @@ export default function RootLayout({
       )}
     >
       <body className="flex flex-col min-h-dvh">
-        <ThemeProvider>
           <div className="flex flex-col flex-1">
             <Navbar />
             <main className="w-4/5 max-w-6xl mx-auto flex-1 flex flex-col">
               {children}
             </main>
           </div>
-        </ThemeProvider>
       </body>
     </html>
   )

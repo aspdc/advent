@@ -3,8 +3,7 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { usePathname } from "next/navigation"
-import { useTheme } from "next-themes"
-import { useState, useSyncExternalStore } from "react"
+import { useState } from "react"
 import { authClient, useSession } from "@/lib/auth-client"
 import { runAuthAction } from "@/lib/auth-action"
 import { Button } from "@/components/ui/button"
@@ -16,30 +15,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-
-function useIsMounted() {
-  return useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false
-  )
-}
-
-function ThemeToggle() {
-  const { resolvedTheme, setTheme } = useTheme()
-  const mounted = useIsMounted()
-  const isDark = mounted ? resolvedTheme === "dark" : false
-
-  return (
-    <Button
-      variant="ghost"
-      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-      onClick={() => setTheme(isDark ? "light" : "dark")}
-    >
-      {isDark ? "[Light]" : "[Dark]"}
-    </Button>
-  )
-}
 
 export function Navbar() {
   const router = useRouter()
@@ -149,9 +124,6 @@ export function Navbar() {
                 </Link>
               </Button>
             )}
-          </li>
-          <li>
-            <ThemeToggle />
           </li>
         </ul>
       </nav>
