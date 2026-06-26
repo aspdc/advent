@@ -4,6 +4,7 @@ import { hasRole, isAuthenticated } from "@/lib/middleware/auth"
 import { getSolvedSet, isUnlocked } from "@/lib/problems/protect"
 import { TOTAL_PROBLEMS } from "@/types/progress"
 import { executeLambda } from "@/lib/lambda"
+import { checkRateLimit } from "@/lib/rate-limit"
 import { db } from "@/db"
 import { submission } from "@/db/schema"
 import { tryCatch } from "@/lib/try-catch"
@@ -114,6 +115,17 @@ problemRoutes.post("/validate", async ({ body, user, set }) => {
   if (solved.has(String(problemId))) {
     set.status = 200
     return { success: true, data: null }
+  }
+
+  const { success: limitOk, limit, remaining, reset } = await checkRateLimit(user.email)
+
+  set.headers["X-RateLimit-Limit"] = String(limit)
+  set.headers["X-RateLimit-Remaining"] = String(remaining)
+
+  if (!limitOk) {
+    set.status = 429
+    set.headers["Retry-After"] = String(Math.ceil((reset - Date.now()) / 1000))
+    return { success: false, error: "Too many submissions. Try again in a moment." }
   }
 
   const result = await executeLambda({

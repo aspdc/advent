@@ -13,6 +13,8 @@ const serverEnvSchema = z.object({
   IAM_SECRET_ACCESS_KEY: z.string(),
   AWS_REGION: z.string().default("us-east-1"),
   LAMBDA_NAME: z.string(),
+  UPSTASH_REDIS_REST_URL: z.string(),
+  UPSTASH_REDIS_REST_TOKEN: z.string(),
 })
 
 const clientEnvSchema = z.object({
