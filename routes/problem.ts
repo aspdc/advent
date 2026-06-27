@@ -147,7 +147,7 @@ problemRoutes.post("/validate", async ({ body, user, set }) => {
         .values({
           userId: user.id,
           problemId: String(problemId),
-          submittedValue: answer as number,
+          submittedValue: answer as string,
         })
         .onConflictDoNothing(),
     )

@@ -2,7 +2,7 @@ export interface ProgressItem {
   id: number
   problemId: string | null
   userId: string
-  submittedValue: number
+  submittedValue: string
   submittedAt: Date | null
 }
 

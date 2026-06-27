@@ -189,11 +189,9 @@ export function ProblemView({ problemId }: ProblemViewProps) {
           >
             <Input
               value={answer}
-              onChange={(e) => setAnswer(e.target.value.replace(/\D/g, ""))}
+              onChange={(e) => setAnswer(e.target.value)}
               disabled={isValidating}
               placeholder="Enter your answer"
-              inputMode="numeric"
-              pattern="[0-9]*"
               className="flex-1 border-0 bg-transparent px-2 py-1.5 text-base shadow-none focus-visible:ring-0"
             />
             <Button

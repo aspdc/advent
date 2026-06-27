@@ -41,7 +41,7 @@ export function Progress({ progress = [] }: ProgressProps) {
                 className="flex aspect-square items-center justify-center rounded-lg border border-primary bg-primary/10 text-sm font-mono text-primary transition-colors hover:bg-primary/20"
               >
                 <span className="flex flex-col items-center leading-tight">
-                  <span className="text-xs">{item?.submittedValue}</span>
+                  <span className="text-xs">{`Solve: ${item?.submittedValue}`}</span>
                 </span>
               </Link>
             )

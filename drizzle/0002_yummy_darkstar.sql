@@ -1,0 +1,1 @@
+ALTER TABLE "submissions" ALTER COLUMN "submitted_value" SET DATA TYPE text;
