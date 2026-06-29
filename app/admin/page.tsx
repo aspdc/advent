@@ -1,131 +1,31 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
-import { toast } from "sonner"
-import { apiFetch } from "@/lib/client-fetch"
-import { Switch } from "@/components/ui/switch"
-import { Button } from "@/components/ui/button"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-
-interface ProblemItem {
-  id: string
-  isActive: boolean
-}
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ProblemsTab } from "@/components/admin/problems-tab"
+import { UsersTab } from "@/components/admin/users-tab"
+import { SubmissionsTab } from "@/components/admin/submissions-tab"
 
 export default function AdminPage() {
-  const [problems, setProblems] = useState<ProblemItem[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [toggling, setToggling] = useState(false)
-  const [loadTrigger, setLoadTrigger] = useState(0)
-
-  useEffect(() => {
-    let cancelled = false
-    apiFetch<ProblemItem[]>("/api/admin/problems").then(({ data, error }) => {
-      if (cancelled) return
-      if (error) {
-        setError(error)
-        setLoading(false)
-        return
-      }
-      if (data) setProblems(data)
-      setLoading(false)
-    })
-    return () => { cancelled = true }
-  }, [loadTrigger])
-
-  const toggle = useCallback(async (id: string) => {
-    setToggling(true)
-    const { data, error } = await apiFetch<ProblemItem>(
-      `/api/admin/problems/${id}`,
-      { method: "PUT" },
-    )
-    setToggling(false)
-
-    if (error) {
-      toast.error(error)
-      return
-    }
-    if (data) {
-      setProblems((prev) =>
-        prev.map((p) => (p.id === id ? { ...p, isActive: data.isActive } : p)),
-      )
-    }
-  }, [])
-
-  if (loading) {
-    return (
-      <div className="flex flex-1 items-center justify-center py-20">
-        <p className="text-sm text-muted-foreground animate-pulse">Loading...</p>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-1 flex-col items-center gap-4 py-20">
-        <p className="text-sm text-destructive">{error}</p>
-        <Button
-          variant="outline"
-          onClick={() => {
-            setLoading(true)
-            setError(null)
-            setLoadTrigger((n) => n + 1)
-          }}
-        >
-          Retry
-        </Button>
-      </div>
-    )
-  }
-
-  const activeCount = problems.filter((p) => p.isActive).length
-
   return (
     <div className="flex flex-1 flex-col gap-4 py-10">
-      <div className="flex items-baseline gap-3">
-        <h1 className="font-mono text-xl font-semibold tracking-wide">Admin Dashboard</h1>
-        <span className="text-sm text-muted-foreground/70 font-mono">
-          {activeCount} / {problems.length} active
-        </span>
-      </div>
+      <h1 className="font-mono text-xl font-semibold tracking-wide">Admin Dashboard</h1>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-12 font-mono">#</TableHead>
-            <TableHead className="font-mono">Status</TableHead>
-            <TableHead className="w-20" />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {problems.map((p) => (
-            <TableRow key={p.id}>
-              <TableCell className="font-mono text-muted-foreground">{p.id}</TableCell>
-              <TableCell className="font-mono">
-                <span className={p.isActive ? "text-primary" : "text-muted-foreground"}>
-                  {p.isActive ? "Active" : "Inactive"}
-                </span>
-              </TableCell>
-              <TableCell>
-                <Switch
-                  checked={p.isActive}
-                  onCheckedChange={() => toggle(p.id)}
-                  disabled={toggling}
-                  size="sm"
-                />
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <Tabs defaultValue="problems">
+        <TabsList>
+          <TabsTrigger value="problems">Problems</TabsTrigger>
+          <TabsTrigger value="users">Users</TabsTrigger>
+          <TabsTrigger value="submissions">Submissions</TabsTrigger>
+        </TabsList>
+        <TabsContent value="problems">
+          <ProblemsTab />
+        </TabsContent>
+        <TabsContent value="users">
+          <UsersTab />
+        </TabsContent>
+        <TabsContent value="submissions">
+          <SubmissionsTab />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
