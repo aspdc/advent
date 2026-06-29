@@ -26,7 +26,7 @@ export function Progress({ progress = [] }: ProgressProps) {
             return (
               <div
                 key={id}
-                className="flex aspect-square cursor-not-allowed items-center justify-center rounded-lg border border-border text-sm font-mono text-muted-foreground opacity-40"
+                className="flex aspect-square cursor-not-allowed items-center justify-center rounded-lg border border-border font-mono text-sm text-muted-foreground opacity-40"
               >
                 {id}
               </div>
@@ -38,10 +38,11 @@ export function Progress({ progress = [] }: ProgressProps) {
               <Link
                 key={id}
                 href={`/problem/${id}`}
-                className="flex aspect-square items-center justify-center rounded-lg border border-primary bg-primary/10 text-sm font-mono text-primary transition-colors hover:bg-primary/20"
+                className="flex aspect-square items-center justify-center rounded-lg border border-primary bg-primary/10 font-mono text-sm text-primary transition-colors hover:bg-primary/20"
               >
-                <span className="flex flex-col items-center leading-tight">
-                  <span className="text-xs">{`Solve: ${item?.submittedValue}`}</span>
+                <span className="flex flex-col items-center text-xs leading-tight">
+                  <span>Solved</span>
+                  <span>{item?.submittedValue}</span>
                 </span>
               </Link>
             )
@@ -51,7 +52,7 @@ export function Progress({ progress = [] }: ProgressProps) {
             <Link
               key={id}
               href={`/problem/${id}`}
-              className="flex aspect-square items-center justify-center rounded-lg border border-muted text-sm font-mono text-foreground transition-colors hover:border-primary hover:text-primary"
+              className="flex aspect-square items-center justify-center rounded-lg border border-muted font-mono text-sm text-foreground transition-colors hover:border-primary hover:text-primary"
             >
               {id}
             </Link>

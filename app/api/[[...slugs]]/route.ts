@@ -5,13 +5,14 @@ import { auth } from "@/lib/auth"
 import { serverEnv } from "@/lib/env"
 import { checkAdminLoginRateLimit } from "@/lib/rate-limit"
 import { db } from "@/db"
-import { user } from "@/db/schema"
+import { user, problem } from "@/db/schema"
 import { tryCatch } from "@/lib/try-catch"
 import { userRoutes } from "@/routes/user"
 import { problemRoutes } from "@/routes/problem"
 
 declare global {
   var _adminSeedPromise: Promise<void> | undefined
+  var _problemSeedPromise: Promise<void> | undefined
 }
 
 const BETTER_AUTH_ACCEPT_METHODS = ["GET", "POST"]
@@ -67,6 +68,26 @@ async function ensureAdmin() {
   }
 }
 
+async function ensureProblems() {
+  const { data: existing, error: findError } = await tryCatch(
+    db.select({ id: problem.id }).from(problem),
+  )
+
+  if (findError) throw findError
+
+  const existingIds = new Set(existing?.map((p) => p.id) ?? [])
+  const all = Array.from({ length: 15 }, (_, i) => String(i + 1))
+  const missing = all.filter((id) => !existingIds.has(id))
+
+  if (missing.length === 0) return
+
+  const { error: insertError } = await tryCatch(
+    db.insert(problem).values(missing.map((id) => ({ id }))).onConflictDoNothing(),
+  )
+
+  if (insertError) throw insertError
+}
+
 async function ensureAdminOnce() {
   if (!global._adminSeedPromise) {
     global._adminSeedPromise = ensureAdmin().catch((error) => {
@@ -76,6 +97,17 @@ async function ensureAdminOnce() {
   }
 
   await global._adminSeedPromise
+}
+
+async function ensureProblemsOnce() {
+  if (!global._problemSeedPromise) {
+    global._problemSeedPromise = ensureProblems().catch((error) => {
+      global._problemSeedPromise = undefined
+      throw error
+    })
+  }
+
+  await global._problemSeedPromise
 }
 
 const betterAuthView = async (context: Context) => {
@@ -108,6 +140,16 @@ const betterAuthView = async (context: Context) => {
     console.error(seedError.stack)
 
     return Response.json({ error: seedError.message }, { status: 500 })
+  }
+
+  const { error: problemSeedError } = await tryCatch(ensureProblemsOnce())
+
+  if (problemSeedError) {
+    console.error("ensureProblemsOnce failed:")
+    console.error(problemSeedError)
+    console.error(problemSeedError.stack)
+
+    return Response.json({ error: problemSeedError.message }, { status: 500 })
   }
 
   const { data: response, error } = await tryCatch(
