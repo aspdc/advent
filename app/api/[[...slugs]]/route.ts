@@ -9,6 +9,7 @@ import { user, problem } from "@/db/schema"
 import { tryCatch } from "@/lib/try-catch"
 import { userRoutes } from "@/routes/user"
 import { problemRoutes } from "@/routes/problem"
+import { adminRoutes } from "@/routes/admin"
 
 declare global {
   var _adminSeedPromise: Promise<void> | undefined
@@ -196,6 +197,7 @@ const app = new Elysia({ prefix: "/api" })
   .post("/seed-admin", seedAdmin)
   .use(userRoutes)
   .use(problemRoutes)
+  .use(adminRoutes)
   .onError(({ code, error, path, request }) => {
     console.error("Unhandled Elysia error")
     console.error({
