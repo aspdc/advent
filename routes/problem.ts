@@ -10,6 +10,19 @@ import { db } from "@/db"
 import { submission } from "@/db/schema"
 import { tryCatch } from "@/lib/try-catch"
 
+async function getNextProblemId(
+  solved: Set<string>,
+  problemId: number,
+): Promise<number | null> {
+  const activeIds = await getActiveProblemIds()
+  for (let i = problemId + 1; i <= TOTAL_PROBLEMS; i++) {
+    if (!solved.has(String(i)) && activeIds.has(String(i))) {
+      return i
+    }
+  }
+  return null
+}
+
 const problemRoutes = new Elysia({ prefix: "/problem" })
   .use(isAuthenticated)
   .use(hasRole(["user", "admin"]))
@@ -92,10 +105,15 @@ problemRoutes.post("/generate", async ({ body, user, set }) => {
   set.status = 200
 
   const generateBody = JSON.parse(result.data.body)
+  const isSolved = solved.has(String(problemId))
+
+  const nextProblemId = isSolved
+    ? await getNextProblemId(solved, problemId)
+    : null
 
   return {
     success: true,
-    data: { ...generateBody, isSolved: solved.has(String(problemId)) },
+    data: { ...generateBody, isSolved, nextProblemId },
   }
 })
 
@@ -135,8 +153,9 @@ problemRoutes.post("/validate", async ({ body, user, set }) => {
   }
 
   if (solved.has(String(problemId))) {
+    const nextProblemId = await getNextProblemId(solved, problemId)
     set.status = 200
-    return { success: true, data: null }
+    return { success: true, data: { nextProblemId } }
   }
 
   const { success: limitOk, limit, remaining, reset } = await checkRateLimit(user.email)
@@ -182,7 +201,15 @@ problemRoutes.post("/validate", async ({ body, user, set }) => {
 
   set.status = 200
 
-  return { success: true, data: validateBody }
+  const newSolved = validateBody.isCorrect
+    ? new Set([...solved, String(problemId)])
+    : solved
+
+  const nextProblemId = validateBody.isCorrect
+    ? await getNextProblemId(newSolved, problemId)
+    : undefined
+
+  return { success: true, data: { ...validateBody, nextProblemId } }
 })
 
 export { problemRoutes }

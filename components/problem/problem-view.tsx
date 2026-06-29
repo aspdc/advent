@@ -1,9 +1,18 @@
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { apiFetch } from "@/lib/client-fetch"
 import { sanitize } from "@/lib/sanitize"
 import type { ProblemData, ValidateData } from "@/types/problem"
@@ -41,10 +50,13 @@ interface ProblemViewProps {
 }
 
 export function ProblemView({ problemId }: ProblemViewProps) {
+  const router = useRouter()
   const [problem, setProblem] = useState<ProblemData | null>(null)
   const [isGenerating, setIsGenerating] = useState(true)
   const [generateError, setGenerateError] = useState<string | null>(null)
   const [isSolved, setIsSolved] = useState(false)
+  const [nextProblemId, setNextProblemId] = useState<number | null>(null)
+  const [showDialog, setShowDialog] = useState(false)
   const [answer, setAnswer] = useState("")
   const [isValidating, setIsValidating] = useState(false)
   const [loadKey, setLoadKey] = useState(0)
@@ -100,7 +112,10 @@ export function ProblemView({ problemId }: ProblemViewProps) {
       }
 
       setProblem(data)
-      if (data.isSolved) setIsSolved(true)
+      if (data.isSolved) {
+        setIsSolved(true)
+        if (data.nextProblemId) setNextProblemId(data.nextProblemId)
+      }
       setIsGenerating(false)
     }
 
@@ -136,7 +151,13 @@ export function ProblemView({ problemId }: ProblemViewProps) {
       return
     }
 
-    if (data === null) {
+    if (!data) return
+
+    if (data.nextProblemId !== undefined) {
+      setNextProblemId(data.nextProblemId)
+    }
+
+    if (data.isCorrect === undefined && data.nextProblemId !== undefined) {
       toast.success("Already solved!")
       setIsSolved(true)
       return
@@ -145,6 +166,7 @@ export function ProblemView({ problemId }: ProblemViewProps) {
     if (data.isCorrect) {
       toast.success("Correct!")
       setIsSolved(true)
+      setShowDialog(true)
     } else {
       toast.error("Incorrect, try again")
     }
@@ -171,12 +193,23 @@ export function ProblemView({ problemId }: ProblemViewProps) {
         {problem.before && <ProblemHTML html={problem.before} />}
         <ProblemHTML html={problem.statement} />
         {problem.example && <ProblemHTML html={problem.example} />}
-        {problem.after && <ProblemHTML html={problem.after} />}
       </div>
 
       {isSolved ? (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-primary/5 border border-primary/30 rounded-full px-8 py-3 shadow-lg">
-          <p className="text-primary font-mono tracking-wide text-center">Solved!</p>
+          {nextProblemId ? (
+            <Button
+              variant="ghost"
+              className="text-primary font-mono tracking-wide text-center h-auto px-0 py-0"
+              onClick={() => router.push(`/problem/${nextProblemId}`)}
+            >
+              Next &rarr; Problem {nextProblemId}
+            </Button>
+          ) : (
+            <p className="text-primary font-mono tracking-wide text-center">
+              Solved!
+            </p>
+          )}
         </div>
       ) : (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[90vw] max-w-xl bg-card border border-border rounded-full px-3 py-2 shadow-xl focus-within:ring-1 focus-within:ring-ring">
@@ -204,6 +237,30 @@ export function ProblemView({ problemId }: ProblemViewProps) {
           </form>
         </div>
       )}
+
+      <AlertDialog open={showDialog} onOpenChange={setShowDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Problem Solved!</AlertDialogTitle>
+          </AlertDialogHeader>
+          {problem.after && (
+            <div className="text-xs/relaxed text-balance text-muted-foreground">
+              <ProblemHTML html={problem.after} />
+            </div>
+          )}
+          <AlertDialogFooter>
+            <AlertDialogAction
+              onClick={() => {
+                router.push(nextProblemId ? `/problem/${nextProblemId}` : "/dashboard")
+              }}
+            >
+              {nextProblemId
+                ? `Next → Problem ${nextProblemId}`
+                : "Back to Dashboard"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

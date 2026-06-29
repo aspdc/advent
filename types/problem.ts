@@ -4,8 +4,10 @@ export interface ProblemData {
   example?: string
   after?: string
   isSolved?: boolean
+  nextProblemId?: number | null
 }
 
 export interface ValidateData {
   isCorrect?: boolean
+  nextProblemId?: number | null
 }
