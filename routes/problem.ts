@@ -2,6 +2,7 @@ import Elysia from "elysia"
 import { z } from "zod"
 import { hasRole, isAuthenticated } from "@/lib/middleware/auth"
 import { getSolvedSet, isUnlocked } from "@/lib/problems/protect"
+import { getActiveProblemIds } from "@/lib/problems/active"
 import { TOTAL_PROBLEMS } from "@/types/progress"
 import { executeLambda } from "@/lib/lambda"
 import { checkRateLimit } from "@/lib/rate-limit"
@@ -33,6 +34,13 @@ problemRoutes.get("/:id", async ({ params: { id }, user, set }) => {
     return { success: false, data: null, error: "Problem is locked" }
   }
 
+  const activeIds = await getActiveProblemIds()
+
+  if (!activeIds.has(String(problemId))) {
+    set.status = 404
+    return { success: false, data: null, error: "Problem not found" }
+  }
+
   set.status = 200
   return { success: true, data: { problemId }, error: null }
 })
@@ -62,6 +70,13 @@ problemRoutes.post("/generate", async ({ body, user, set }) => {
   if (!isUnlocked(solved, problemId)) {
     set.status = 403
     return { success: false, error: "Problem is locked" }
+  }
+
+  const activeIds = await getActiveProblemIds()
+
+  if (!activeIds.has(String(problemId))) {
+    set.status = 404
+    return { success: false, error: "Problem not found" }
   }
 
   const result = await executeLambda({
@@ -110,6 +125,13 @@ problemRoutes.post("/validate", async ({ body, user, set }) => {
   if (!isUnlocked(solved, problemId)) {
     set.status = 403
     return { success: false, error: "Problem is locked" }
+  }
+
+  const activeIds = await getActiveProblemIds()
+
+  if (!activeIds.has(String(problemId))) {
+    set.status = 404
+    return { success: false, error: "Problem not found" }
   }
 
   if (solved.has(String(problemId))) {

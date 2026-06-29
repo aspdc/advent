@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react"
 import { useSession } from "@/lib/auth-client"
-import { TOTAL_PROBLEMS } from "@/types/progress"
 
 const ART_LINES = [
   "  ███\\                                           ██\\                 ███\\   ",
@@ -20,8 +19,11 @@ const ART_LINES = [
 
 const LINE_LENGTH = ART_LINES[0].length
 
-function buildRevealedLines(solvedCount: number): string[] {
-  const revealAt = Math.ceil((solvedCount / TOTAL_PROBLEMS) * LINE_LENGTH)
+function buildRevealedLines(
+  solvedCount: number,
+  activeCount: number,
+): string[] {
+  const revealAt = Math.ceil((solvedCount / activeCount) * LINE_LENGTH)
 
   return ART_LINES.map((line) => {
     let result = ""
@@ -39,6 +41,7 @@ function buildRevealedLines(solvedCount: number): string[] {
 export function AsciiArt() {
   const { data: session } = useSession()
   const [solvedCount, setSolvedCount] = useState(0)
+  const [activeCount, setActiveCount] = useState(0)
 
   useEffect(() => {
     if (!session) return
@@ -53,6 +56,9 @@ export function AsciiArt() {
             const solved = new Set(items.map((i) => i.problemId))
             setSolvedCount(solved.size)
           }
+          if (typeof json.activeCount === "number") {
+            setActiveCount(json.activeCount)
+          }
         }
       } catch {
         // silently fail
@@ -62,7 +68,9 @@ export function AsciiArt() {
     fetchProgress()
   }, [session])
 
-  const lines = buildRevealedLines(solvedCount)
+  if (activeCount === 0) return null
+
+  const lines = buildRevealedLines(solvedCount, activeCount)
 
   return (
     <div className="flex flex-col gap-4">

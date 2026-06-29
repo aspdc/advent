@@ -5,6 +5,7 @@ import { db } from "@/db"
 import { submission } from "@/db/schema"
 import { eq } from "drizzle-orm"
 import { TOTAL_PROBLEMS } from "@/types/progress"
+import { getActiveProblemIds } from "@/lib/problems/active"
 
 export async function getSolvedSet(userId: string): Promise<Set<string>> {
   const result = await db
@@ -40,6 +41,12 @@ export async function protectProblem(problemId: number) {
   const solved = await getSolvedSet(session.user.id)
 
   if (!isUnlocked(solved, problemId)) {
+    redirect("/dashboard")
+  }
+
+  const activeIds = await getActiveProblemIds()
+
+  if (!activeIds.has(String(problemId))) {
     redirect("/dashboard")
   }
 

@@ -167,7 +167,7 @@ adminRoutes.get("/submissions", async ({ query, set }) => {
   const whereClause = search
     ? or(
         ilike(user.name, `%${search}%`),
-        ilike(submission.problemId, `%${search}%`),
+        ilike(sql`${submission.problemId}::text`, `%${search}%`),
         ilike(submission.submittedValue, `%${search}%`),
       )
     : undefined

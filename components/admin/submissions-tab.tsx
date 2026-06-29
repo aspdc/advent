@@ -77,10 +77,17 @@ export function SubmissionsTab() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadTrigger, sortBy, sortDir])
 
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [])
+
   const handleSearch = useCallback((e: React.FormEvent) => {
     e.preventDefault()
     if (debounceRef.current) clearTimeout(debounceRef.current)
     setPage(1)
+    setLoading(true)
     setLoadTrigger((n) => n + 1)
   }, [])
 
@@ -89,6 +96,7 @@ export function SubmissionsTab() {
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
       setPage(1)
+      setLoading(true)
       setLoadTrigger((n) => n + 1)
     }, 300)
   }, [])
@@ -101,6 +109,7 @@ export function SubmissionsTab() {
       setSortDir("asc")
     }
     setPage(1)
+    setLoading(true)
   }
 
   function sortIcon(column: SortBy) {
@@ -113,7 +122,7 @@ export function SubmissionsTab() {
 
   const totalPages = Math.ceil(total / limit)
 
-  if (loading) {
+  if (loading && submissions.length === 0) {
     return (
       <div className="flex items-center justify-center py-12">
         <p className="animate-pulse text-sm text-muted-foreground">
@@ -149,69 +158,79 @@ export function SubmissionsTab() {
           value={search}
           onChange={(e) => handleSearchInput(e.target.value)}
           className="max-w-xs"
+          disabled={loading}
         />
-        <Button type="submit" variant="secondary">
+        <Button type="submit" variant="secondary" disabled={loading}>
           Search
         </Button>
       </form>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead
-              className="cursor-pointer font-mono select-none"
-              onClick={() => toggleSort("problemId")}
-            >
-              Problem {sortIcon("problemId")}
-            </TableHead>
-            <TableHead className="font-mono">User</TableHead>
-            <TableHead
-              className="cursor-pointer font-mono select-none"
-              onClick={() => toggleSort("submittedValue")}
-            >
-              Answer {sortIcon("submittedValue")}
-            </TableHead>
-            <TableHead
-              className="cursor-pointer font-mono select-none"
-              onClick={() => toggleSort("submittedAt")}
-            >
-              Submitted {sortIcon("submittedAt")}
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {submissions.length === 0 ? (
+      <div className="relative">
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableCell
-                colSpan={4}
-                className="py-8 text-center text-muted-foreground"
+              <TableHead
+                className={`cursor-pointer font-mono select-none ${loading ? "pointer-events-none opacity-50" : ""}`}
+                onClick={() => toggleSort("problemId")}
               >
-                No submissions found
-              </TableCell>
+                Problem {sortIcon("problemId")}
+              </TableHead>
+              <TableHead className="font-mono">User</TableHead>
+              <TableHead
+                className={`cursor-pointer font-mono select-none ${loading ? "pointer-events-none opacity-50" : ""}`}
+                onClick={() => toggleSort("submittedValue")}
+              >
+                Answer {sortIcon("submittedValue")}
+              </TableHead>
+              <TableHead
+                className={`cursor-pointer font-mono select-none ${loading ? "pointer-events-none opacity-50" : ""}`}
+                onClick={() => toggleSort("submittedAt")}
+              >
+                Submitted {sortIcon("submittedAt")}
+              </TableHead>
             </TableRow>
-          ) : (
-            submissions.map((s) => (
-              <TableRow key={s.id}>
-                <TableCell className="font-mono">{s.problemId}</TableCell>
-                <TableCell className="font-mono text-muted-foreground">
-                  {s.userName ?? s.userId}
-                </TableCell>
+          </TableHeader>
+          <TableBody>
+            {submissions.length === 0 ? (
+              <TableRow>
                 <TableCell
-                  className="max-w-37.5 truncate font-mono"
-                  title={s.submittedValue}
+                  colSpan={4}
+                  className="py-8 text-center text-muted-foreground"
                 >
-                  {s.submittedValue}
-                </TableCell>
-                <TableCell className="font-mono text-muted-foreground">
-                  {s.submittedAt
-                    ? new Date(s.submittedAt).toLocaleString()
-                    : "-"}
+                  No submissions found
                 </TableCell>
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+            ) : (
+              submissions.map((s) => (
+                <TableRow key={s.id}>
+                  <TableCell className="font-mono">{s.problemId}</TableCell>
+                  <TableCell className="font-mono text-muted-foreground">
+                    {s.userName ?? s.userId}
+                  </TableCell>
+                  <TableCell
+                    className="max-w-37.5 truncate font-mono"
+                    title={s.submittedValue}
+                  >
+                    {s.submittedValue}
+                  </TableCell>
+                  <TableCell className="font-mono text-muted-foreground">
+                    {s.submittedAt
+                      ? new Date(s.submittedAt).toLocaleString()
+                      : "-"}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+        {loading && submissions.length > 0 && (
+          <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-background/50">
+            <p className="animate-pulse text-sm text-muted-foreground">
+              Loading...
+            </p>
+          </div>
+        )}
+      </div>
 
       <div className="flex items-center justify-between font-mono text-xs text-muted-foreground">
         <span>
@@ -221,9 +240,10 @@ export function SubmissionsTab() {
           <Button
             variant="outline"
             size="sm"
-            disabled={page <= 1}
+            disabled={loading || page <= 1}
             onClick={() => {
               setPage((p) => p - 1)
+              setLoading(true)
               setLoadTrigger((n) => n + 1)
             }}
           >
@@ -235,9 +255,10 @@ export function SubmissionsTab() {
           <Button
             variant="outline"
             size="sm"
-            disabled={page >= totalPages}
+            disabled={loading || page >= totalPages}
             onClick={() => {
               setPage((p) => p + 1)
+              setLoading(true)
               setLoadTrigger((n) => n + 1)
             }}
           >

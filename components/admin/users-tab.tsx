@@ -60,10 +60,17 @@ export function UsersTab() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadTrigger])
 
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [])
+
   const handleSearch = useCallback((e: React.FormEvent) => {
     e.preventDefault()
     if (debounceRef.current) clearTimeout(debounceRef.current)
     setPage(1)
+    setLoading(true)
     setLoadTrigger((n) => n + 1)
   }, [])
 
@@ -72,6 +79,7 @@ export function UsersTab() {
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
       setPage(1)
+      setLoading(true)
       setLoadTrigger((n) => n + 1)
     }, 300)
   }, [])
@@ -98,7 +106,7 @@ export function UsersTab() {
 
   const totalPages = Math.ceil(total / limit)
 
-  if (loading) {
+  if (loading && users.length === 0) {
     return (
       <div className="flex items-center justify-center py-12">
         <p className="text-sm text-muted-foreground animate-pulse">Loading...</p>
@@ -125,55 +133,65 @@ export function UsersTab() {
           value={search}
           onChange={(e) => handleSearchInput(e.target.value)}
           className="max-w-xs"
+          disabled={loading}
         />
-        <Button type="submit" variant="secondary">Search</Button>
+        <Button type="submit" variant="secondary" disabled={loading}>
+          Search
+        </Button>
       </form>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="font-mono">Name</TableHead>
-            <TableHead className="font-mono">Email</TableHead>
-            <TableHead className="font-mono w-16">Score</TableHead>
-            <TableHead className="font-mono w-16">Banned</TableHead>
-            <TableHead className="w-20" />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {users.length === 0 ? (
+      <div className="relative">
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                No users found
-              </TableCell>
+              <TableHead className="font-mono">Name</TableHead>
+              <TableHead className="font-mono">Email</TableHead>
+              <TableHead className="font-mono w-16">Score</TableHead>
+              <TableHead className="font-mono w-16">Banned</TableHead>
+              <TableHead className="w-20" />
             </TableRow>
-          ) : (
-            users.map((u) => (
-              <TableRow key={u.id}>
-                <TableCell className="font-mono">{u.name}</TableCell>
-                <TableCell className="font-mono text-muted-foreground">{u.email}</TableCell>
-                <TableCell className="font-mono">{u.score}</TableCell>
-                <TableCell className="font-mono">
-                  {u.banned ? (
-                    <span className="text-destructive">Yes</span>
-                  ) : (
-                    <span className="text-muted-foreground">No</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <Button
-                    variant={u.banned ? "outline" : "destructive"}
-                    size="sm"
-                    onClick={() => toggleBan(u.id)}
-                    disabled={bannedLoading}
-                  >
-                    {u.banned ? "Unban" : "Ban"}
-                  </Button>
+          </TableHeader>
+          <TableBody>
+            {users.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                  No users found
                 </TableCell>
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+            ) : (
+              users.map((u) => (
+                <TableRow key={u.id}>
+                  <TableCell className="font-mono">{u.name}</TableCell>
+                  <TableCell className="font-mono text-muted-foreground">{u.email}</TableCell>
+                  <TableCell className="font-mono">{u.score}</TableCell>
+                  <TableCell className="font-mono">
+                    {u.banned ? (
+                      <span className="text-destructive">Yes</span>
+                    ) : (
+                      <span className="text-muted-foreground">No</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant={u.banned ? "outline" : "destructive"}
+                      size="sm"
+                      onClick={() => toggleBan(u.id)}
+                      disabled={bannedLoading}
+                    >
+                      {u.banned ? "Unban" : "Ban"}
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+        {loading && users.length > 0 && (
+          <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-background/50">
+            <p className="animate-pulse text-sm text-muted-foreground">Loading...</p>
+          </div>
+        )}
+      </div>
 
       <div className="flex items-center justify-between text-xs text-muted-foreground font-mono">
         <span>{total} user{total !== 1 ? "s" : ""}</span>
@@ -181,8 +199,8 @@ export function UsersTab() {
           <Button
             variant="outline"
             size="sm"
-            disabled={page <= 1}
-            onClick={() => { setPage((p) => p - 1); setLoadTrigger((n) => n + 1) }}
+            disabled={loading || page <= 1}
+            onClick={() => { setPage((p) => p - 1); setLoading(true); setLoadTrigger((n) => n + 1) }}
           >
             Prev
           </Button>
@@ -190,8 +208,8 @@ export function UsersTab() {
           <Button
             variant="outline"
             size="sm"
-            disabled={page >= totalPages}
-            onClick={() => { setPage((p) => p + 1); setLoadTrigger((n) => n + 1) }}
+            disabled={loading || page >= totalPages}
+            onClick={() => { setPage((p) => p + 1); setLoading(true); setLoadTrigger((n) => n + 1) }}
           >
             Next
           </Button>

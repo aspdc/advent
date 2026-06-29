@@ -1,25 +1,32 @@
 import Link from "next/link"
 import type { ProgressItem } from "@/types/progress"
-import { TOTAL_PROBLEMS } from "@/types/progress"
 import { getProblemStatus, buildSolvedSet } from "@/lib/problems"
+import { getActiveProblemIds } from "@/lib/problems/active"
 
 interface ProgressProps {
   progress?: ProgressItem[]
 }
 
-export function Progress({ progress = [] }: ProgressProps) {
+export async function Progress({ progress = [] }: ProgressProps) {
   const solved = buildSolvedSet(progress)
-  const solvedCount = solved.size
+  const activeIds = await getActiveProblemIds()
+  const activeCount = activeIds.size
+  const solvedActiveCount = [...solved].filter((id) => activeIds.has(id)).length
+
+  const activeProblems = [...activeIds]
+    .map(Number)
+    .filter((n) => !Number.isNaN(n))
+    .sort((a, b) => a - b)
 
   return (
     <div className="flex flex-col gap-4">
       <p className="text-sm text-muted-foreground">
-        Solved {solvedCount} of {TOTAL_PROBLEMS} problems
+        Solved {solvedActiveCount} of {activeCount} problems
       </p>
       <div className="grid grid-cols-5 gap-2 sm:grid-cols-8">
-        {Array.from({ length: TOTAL_PROBLEMS }, (_, i) => {
-          const id = String(i + 1)
-          const status = getProblemStatus(solved, i + 1)
+        {activeProblems.map((problemNumber) => {
+          const id = String(problemNumber)
+          const status = getProblemStatus(solved, problemNumber)
           const item = progress.find((p) => p.problemId === id)
 
           if (status === "locked") {
